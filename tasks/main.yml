@@ -17,7 +17,10 @@
  - name: install docker
    become: yes
    apt: 
-    name: "docker-ce"
+    name: 
+      - "docker-ce"
+      - "docker-ce-cli"
+      - "containerd.io"
     state: "latest"
     force: yes
    notify: restart docker
