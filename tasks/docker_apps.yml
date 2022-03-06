@@ -1,0 +1,39 @@
+---
+
+  - name: Create systemd service template file
+    become: yes
+    copy:
+      src: "docker-compose@.service"
+      dest: "/etc/systemd/system/docker-compose@.service"
+      mode: 0644
+    when: docker_apps is defined
+  - name: Create directory for each docker compose app
+    become: yes
+    file:
+      path: /etc/docker/compose/{{item.name}}
+      state: directory
+    loop: "{{docker_apps}}"
+    when: docker_apps is defined
+  - name: Fetch docker compose file for each app
+    become: yes
+    get_url: 
+      url: "{{item.url}}"
+      dest: "/etc/docker/compose/{{item.name}}/docker-compose.yml"
+    loop: "{{docker_apps}}"
+    when: docker_apps is defined
+  - name: Place .env file containing environment variables
+    become: yes
+    template: 
+      src: "env.j2"
+      dest: "/etc/docker/compose/{{item.name}}/.env"
+      mode: 0600
+    loop: "{{docker_apps}}"
+    when: docker_apps is defined and item.env is defined
+  - name: Start and enable docker compose services
+    become: yes
+    ansible.builtin.systemd:
+      name: "docker-compose@{{item.name}}"
+      state: started
+      enabled: yes
+    loop: "{{docker_apps}}"
+    when: docker_apps is defined
