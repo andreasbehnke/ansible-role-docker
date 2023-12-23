@@ -1,4 +1,11 @@
 ---
+ - name: install prerequisites
+   become: yes
+   apt: 
+    name: 
+      - "gpg"
+    state: "latest"
+    force: yes
 
  - name: add key for docker repository
    become: yes
@@ -21,6 +28,7 @@
       - "docker-ce"
       - "docker-ce-cli"
       - "containerd.io"
+      - "docker-compose-plugin"
     state: "latest"
     force: yes
    notify: restart docker
@@ -35,10 +43,3 @@
  - name: adding docker user to group docker
    become: yes
    user: name='{{ docker_user }}' groups='docker' state=present append=yes
-   
- - name: install docker-compose
-   become: yes
-   get_url: 
-    url: "{{docker_compose_url}}"
-    dest: "/usr/local/bin/docker-compose"
-    mode: "u=rwx,g=rx,o=rx"
