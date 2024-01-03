@@ -15,5 +15,6 @@ https://gist.github.com/mosquito/b23e1c1e5723a7fd9e6568e5cf91180f
 Applications of the list docker_apps are defined by this object properties:
 
 * name: The application name, will be used by systemctl to start and stop application
-* url: URL to docker compose file
+* url: URL to docker compose file or ...
+* src: ... path to local docker compose file
 * env: Dictonary of application environment variables and their values

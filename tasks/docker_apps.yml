@@ -14,13 +14,20 @@
       state: directory
     loop: "{{docker_apps}}"
     when: docker_apps is defined
-  - name: Fetch docker compose file for each app
+  - name: Fetch docker compose file for each app with a url
     become: yes
     get_url: 
       url: "{{item.url}}"
       dest: "/etc/docker/compose/{{item.name}}/docker-compose.yml"
     loop: "{{docker_apps}}"
-    when: docker_apps is defined
+    when: docker_apps is defined and item.url is defined
+  - name: Fetch docker compose file for each app with a source file
+    become: yes
+    copy: 
+      src: "{{item.src}}"
+      dest: "/etc/docker/compose/{{item.name}}/docker-compose.yml"
+    loop: "{{docker_apps}}"
+    when: docker_apps is defined and item.src is defined
   - name: Place .env file containing environment variables
     become: yes
     template: 
