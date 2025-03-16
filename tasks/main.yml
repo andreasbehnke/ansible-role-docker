@@ -1,4 +1,4 @@
 ---
 
- - include: install.yml
- - include: docker_apps.yml
+ - include_tasks: install.yml
+ - include_tasks: docker_apps.yml
