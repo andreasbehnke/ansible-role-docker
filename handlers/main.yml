@@ -2,6 +2,16 @@
 
  - name: restart docker
    become: yes
-   systemd: 
+   systemd:
     name: "docker.service"
     daemon-reload: yes
+
+ - name: reconcile docker compose
+   become: yes
+   command:
+    cmd: "docker compose up -d --remove-orphans"
+    chdir: "/etc/docker/compose/{{ item.name }}"
+   loop: "{{ docker_apps }}"
+   loop_control:
+    label: "{{ item.name }}"
+   when: docker_apps is defined

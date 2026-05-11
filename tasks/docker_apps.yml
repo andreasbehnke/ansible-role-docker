@@ -16,26 +16,42 @@
     when: docker_apps is defined
   - name: Fetch docker compose file for each app with a url
     become: yes
-    get_url: 
+    get_url:
       url: "{{item.url}}"
       dest: "/etc/docker/compose/{{item.name}}/docker-compose.yml"
     loop: "{{docker_apps}}"
     when: docker_apps is defined and item.url is defined
+    notify: reconcile docker compose
   - name: Fetch docker compose file for each app with a source file
     become: yes
-    copy: 
+    copy:
       src: "{{item.src}}"
       dest: "/etc/docker/compose/{{item.name}}/docker-compose.yml"
     loop: "{{docker_apps}}"
     when: docker_apps is defined and item.src is defined
+    notify: reconcile docker compose
   - name: Place .env file containing environment variables
     become: yes
-    template: 
+    template:
       src: "env.j2"
       dest: "/etc/docker/compose/{{item.name}}/.env"
       mode: 0600
     loop: "{{docker_apps}}"
     when: docker_apps is defined and item.env is defined
+    notify: reconcile docker compose
+  - name: Pre-create bind-mount directories with declared ownership
+    become: yes
+    file:
+      path: "{{ item.1.path }}"
+      state: directory
+      owner: "{{ item.1.owner | default(omit) }}"
+      group: "{{ item.1.group | default(omit) }}"
+      mode: "{{ item.1.mode | default(omit) }}"
+    loop: "{{ docker_apps | subelements('volumes', skip_missing=True) }}"
+    loop_control:
+      label: "{{ item.0.name }}: {{ item.1.path }}"
+    when: docker_apps is defined
+    notify: reconcile docker compose
   - name: Start and enable docker compose services
     become: yes
     systemd:
